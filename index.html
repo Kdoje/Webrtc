@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <title>Realtime communication with WebRTC</title>
+
+</head>
+
+<body>
+
+<h1>Realtime communication with WebRTC</h1>
+
+<p id="msgHistory">messages</p>
+  <label for="txtMsgToSend">Text box</label>
+  <input type = "text"
+         id = "txtMsgToSend"
+         value = "" />
+<button id="btnSend">Send</button>
+
+<div id="videos">
+  <video id="localVideo" autoplay muted></video>
+  <video id="remoteVideo" autoplay></video>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+<script src="scripts/main.js"></script>
+
+</body>
+
+</html>
