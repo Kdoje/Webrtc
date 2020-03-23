@@ -42,6 +42,11 @@ socket.on('joined', function (room) {
   isChannelReady = true;
 });
 
+socket.on('ready', function (room) {
+  console.log("peers are ready");
+  attachToRoom();
+});
+
 socket.on('log', function (array) {
   console.log.apply(console, array);
 });
@@ -49,7 +54,6 @@ socket.on('log', function (array) {
 ////////////////////////////////////////////////
 
 function sendMessage(message) {
-  console.log('Client sending message: ', message);
   socket.emit('message', message);
 }
 
@@ -93,15 +97,10 @@ function attachToRoom() {
 
 btnSend.onclick= ()=>{
   console.log("sending Message");
-  if(!isStarted){
-    attachToRoom();
-    console.log("trying to start");
-  }
-  else{
     sendChannel.send("HIt");
-  }
 };
 function recieveChannelCallback(event){
+  console.log("attaching to channel");
   sendChannel = event.channel;
   sendChannel.onmessage = onRecieveMessage;
 }
