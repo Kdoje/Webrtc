@@ -14,8 +14,8 @@ var room = 'foo';
 // Could prompt for room name:
 // room = prompt('Enter room name:');
 
-var socket = io();
-socket.connect('http://localhost:3000', { autoConnect: true});
+var socket = io('https://kdoje-sockets.glitch.me').connect();
+//socket.connect('https://kdoje-sockets.glitch.me', { autoConnect: true});
 
 if (room !== '') {
   socket.emit('create or join', room);
