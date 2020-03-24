@@ -14,7 +14,8 @@ var room = 'foo';
 // Could prompt for room name:
 // room = prompt('Enter room name:');
 
-var socket = io.connect();
+var socket = io();
+socket.connect('http://localhost:3000', { autoConnect: true});
 
 if (room !== '') {
   socket.emit('create or join', room);
@@ -24,7 +25,6 @@ if (room !== '') {
 socket.on('created', function (room) {
   console.log('Created room ' + room);
   isInitiator = true;
-  attachToRoom();
 });
 
 socket.on('full', function (room) {
@@ -34,16 +34,15 @@ socket.on('full', function (room) {
 socket.on('join', function (room) {
   console.log('Another peer made a request to join room ' + room);
   console.log('This peer is the initiator of room ' + room + '!');
-  isChannelReady = true;
 });
 
 socket.on('joined', function (room) {
   console.log('joined: ' + room);
-  isChannelReady = true;
 });
 
 socket.on('ready', function (room) {
   console.log("peers are ready");
+  isChannelReady = true;
   attachToRoom();
 });
 
@@ -59,9 +58,8 @@ function sendMessage(message) {
 
 // This client receives a message
 socket.on('message', function (message) {
-  console.log('Client received message:', message);
   if (message.type === 'offer') {
-    if (!isInitiator && !isStarted) {
+    if (!isStarted) {
       attachToRoom();
     }
     pc.setRemoteDescription(new RTCSessionDescription(message));
@@ -97,10 +95,11 @@ function attachToRoom() {
 
 btnSend.onclick= ()=>{
   console.log("sending Message");
-    sendChannel.send("HIt");
+  sendChannel.send(txtMsgToSend.value);
+  txtMsgToSend.value = "";
 };
 function recieveChannelCallback(event){
-  console.log("attaching to channel");
+  console.log("attached to channel");
   sendChannel = event.channel;
   sendChannel.onmessage = onRecieveMessage;
 }
@@ -119,8 +118,6 @@ function createPeerConnection() {
   try {
     pc = new RTCPeerConnection(null);
     pc.onicecandidate = handleIceCandidate;
-    sendChannel = pc.createDataChannel('sendDataChannel');
-    sendChannel.onmessage = onRecieveMessage;
     isStarted = true;
     console.log('Created RTCPeerConnnection');
   } catch (e) {
@@ -130,7 +127,6 @@ function createPeerConnection() {
 }
 
 function handleIceCandidate(event) {
-  console.log('icecandidate event: ', event);
   if (event.candidate) {
     sendMessage({
       type: 'candidate',
@@ -138,8 +134,6 @@ function handleIceCandidate(event) {
       id: event.candidate.sdpMid,
       candidate: event.candidate.candidate
     });
-  } else {
-    console.log('End of candidates.');
   }
 }
 
@@ -148,6 +142,8 @@ function handleCreateOfferError(event) {
 }
 
 function createOffer() {
+  sendChannel = pc.createDataChannel('sendDataChannel');
+  sendChannel.onmessage = onRecieveMessage;
   console.log('Sending offer to peer');
   pc.createOffer(setLocalAndSendMessage, handleCreateOfferError);
 }
@@ -162,8 +158,8 @@ function doAnswer() {
 
 function setLocalAndSendMessage(sessionDescription) {
   pc.setLocalDescription(sessionDescription);
-  console.log('setLocalAndSendMessage sending message', sessionDescription);
   sendMessage(sessionDescription);
+  console.log("connected to channel");
 }
 
 function onCreateSessionDescriptionError(error) {
